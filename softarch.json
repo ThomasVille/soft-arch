@@ -1,0 +1,22 @@
+{
+    "name": "Innovative project",
+    "modules": [
+        "react-components",
+        "ts-parser",
+        "js-parser"
+    ],
+    "links": [
+        {
+            "from": {
+                "module": "ts-parser",
+                "output": "ts-ast"
+            },
+            "to": {
+                "module": "react-components",
+                "input": "ts-ast"
+            }
+        }
+    ],
+    "include": "test/**",
+    "exclude": "**/package.json"
+}

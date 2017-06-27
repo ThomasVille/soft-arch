@@ -1,0 +1,16 @@
+{
+    "name": "react-components",
+    "file": "index.js",
+    "inputs": [
+        {
+            "name": "ts-ast",
+            "format": "ts-ast"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "react-components",
+            "format": "react-component-list"
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "name": "parser",
+    "file": "mocha.js",
+    "inputs": [
+        {
+            "name": "file",
+            "format": "file"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "ast",
+            "format": "ast"
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "name": "analyzer",
+    "file": "mocha.js",
+    "inputs": [
+        {
+            "name": "ast",
+            "format": "ast"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "list",
+            "format": "list"
+        }
+    ]
+}

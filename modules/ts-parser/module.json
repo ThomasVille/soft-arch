@@ -1,0 +1,16 @@
+{
+    "name": "ts-parser",
+    "file": "ts-parser.js",
+    "inputs": [
+        {
+            "name": "ts-file",
+            "format": "ts-file"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "ts-ast",
+            "format": "ts-ast"
+        }
+    ]
+}
