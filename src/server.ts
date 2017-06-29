@@ -79,14 +79,6 @@ class Server {
         // Build the modules that will listen to file changes
         for(let extension of extensions) {
             //console.log(util.inspect(extension));
-            let files: Array<string>;
-            // Get the list of all files that will be tracked
-            if(extension === 'file') {
-                files = this.projectConfig.filenames;
-            } else {
-                files = this.projectConfig.filenames.filter(f => f.endsWith(extension));
-            }
-            //console.log(util.inspect(files));
             let moduleConfig: ModuleConfig = {
                 file: '',
                 name: extension,
@@ -95,35 +87,38 @@ class Server {
             };
 
             let changedFiles: Set<string> = new Set<string>();
-            
+
             let module = ModuleBuilder.buildFunctionModule(moduleConfig, () => {
-                return {
+                let outputs = {
                     [extension+'-file']: Array.from(changedFiles)
                 };
+                //console.log(`changedFiles seen by ${module.name}`, util.inspect(changedFiles));
+                changedFiles.clear();
+                return outputs; 
             });
 
             moduleGraph.insertModule(module);
-
-            // Link this watcher module to every module that need that type of file
+            
+            // Link this watcher module to every module that needs that type of file
             let modulesToConnect = entryNodes.filter(m => m.inputs.find(i => i.name === moduleConfig.outputs[0].name) !== undefined);
             for(let moduleToConnect of modulesToConnect) {
                 moduleGraph.link(module.outputs[0], moduleToConnect.inputs.find(i => i.name === moduleConfig.outputs[0].name)!);
             }
 
-            let invalidateModule = _.debounce(() => {
+            let debouncedInvalidation = _.debounce(() => {
                 this.executionEngine.invalidate(module);
-            }, 10, {trailing: true, leading: false});
+            }, 500, {trailing: true, leading: false});
 
 
-            // Store the files changed for a certain time then invalidate the module
-            this.fileWatcher.addChangeListener(extension, (filename: string) => {
-                console.log(`file ${filename} has changed. Invalidating module ...`);
+            // Store the changed files for a certain time then invalidate the module
+            this.fileWatcher.addListener(extension, (filename: string) => {
+                //console.log(`file ${filename} has changed. Invalidating module ...`);
                 changedFiles.add(filename);
-                invalidateModule();
+                debouncedInvalidation();
             });
         }
 
-        this.executionEngine.invalidateAll();
+        this.fileWatcher.notifyAll();
     }
 
     openDefaultProject(): void {
@@ -151,7 +146,7 @@ let appConfig = {
 };
 
 let moduleManager = new ModuleManager(appConfig);
-let executionEngine = new ExecutionEngine();
+let executionEngine = new ExecutionEngine(100);
 let fileWatcher = new FileWatcher();
 
 let server = new Server(moduleManager, appConfig, executionEngine, fileWatcher);

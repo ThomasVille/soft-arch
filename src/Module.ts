@@ -68,6 +68,8 @@ export interface IModule {
     outputs: Array<ModuleOutput>;
     state: ModuleState;
     isValid: boolean;
+    isExecuting: boolean;
+    
 
     //sendMessage(message: any): void;
     //addMessageListener(messageType: MessageType, listener: (message: Message)=>void): void;
@@ -82,7 +84,8 @@ export class ModuleBaseImpl {
     public state: ModuleState = ModuleState.BUSY;
     public messageQueue: Array<any> = [];
     public messageListeners: Map<MessageType, Array<(message: Message)=>void>> = new Map();
-    public isValid: boolean;
+    public isValid: boolean = false;
+    public isExecuting: boolean = false;
 
     invalidate(): void {
         this.isValid = false;
@@ -158,8 +161,12 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
 
     public computeOutputs(): Promise<Array<ModuleOutput>> {
         console.log('computeOutput of', this.name);
-        this.isValid = true;
-        return Promise.resolve(this.outputs);
+        this.isExecuting = true;
+        return new Promise((resolve, reject) => {
+            this.isValid = true;
+            this.isExecuting = false;
+            resolve(this.outputs);
+        });
     }
 }
 
@@ -198,7 +205,7 @@ export class FunctionModule extends ModuleBaseImpl implements IModule {
 
     public computeOutputs(): Promise<Array<ModuleOutput>> {
         console.log('computeOutput of', this.name);
-        this.isValid = true;
+        this.isExecuting = true;
         return new Promise((resolve, reject) => {
             // Transform the input array to an object
             let inputs: any = {};
@@ -220,7 +227,8 @@ export class FunctionModule extends ModuleBaseImpl implements IModule {
             if(modifiedOutputs !== this.outputs.length) {
                 throw new Error('Not all outputs have been computed');
             }
-
+            this.isExecuting = false;
+            this.isValid = true;
             resolve(this.outputs);
         });
     }

@@ -1,14 +1,34 @@
 const fs = require('fs');
 
 export class FileWatcher {
-    files: Set<string> = new Set<string>();
+    // Maps each file with a list of listeners
+    files: Map<string, Array<(filename: string)=>void>> = new Map();
 
     constructor() {
 
     }
 
+    public notifyAll() {
+        this.files.forEach((listeners: Array<(filename: string)=>void>, filename: string) => {
+            for(let listener of listeners) {
+                listener(filename);
+            }
+        });
+    }
+
+    private handleFileChange(eventType: string, filename: string) {
+        let listeners = this.files.get(filename)!;
+
+        for(let listener of listeners) {
+            listener(filename);
+        }
+    }
+
     public addFile(path: string): void {
-        this.files.add(path);
+        this.files.set(path, new Array());
+        
+        // Add a watcher that calls each listener of this file
+        fs.watch(path, {persistent: false}, this.handleFileChange);
     }
 
     public addFiles(paths: Array<string>): void {
@@ -18,14 +38,16 @@ export class FileWatcher {
     }
 
     public getFiles(): Array<string> {
-        return Array.from(this.files);
+        return Array.from(this.files.keys());
     }
 
-    public addChangeListener(extension: string, callback: (filename: string)=>void) {
-        Array.from(this.files).filter(f => f.endsWith(extension)).forEach(file => {
-            fs.watch(file, {persistent: false}, (eventType: string, filename: string) => {
-                callback(filename);
-            });
+    private doAddListener(path: string, callback: (filename: string)=>void) {
+        this.files.get(path)!.push(callback);
+    }
+
+    public addListener(extension: string, callback: (filename: string)=>void) {
+        Array.from(this.files.keys()).filter(f => f.endsWith(extension)).forEach(file => {
+            this.doAddListener(file, callback);
         });
     }
 }

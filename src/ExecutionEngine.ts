@@ -1,10 +1,13 @@
 import { ProjectConfig, LinkConfig } from "./ProjectManager";
 import { IModule, ModuleOutput } from "./Module";
 import { ModuleGraph } from "./ModuleGraph";
+import * as _ from 'lodash';
 
 
-export function printModuleOutputs(moduleOutputs: Array<ModuleOutput>) {
-    for(let output of moduleOutputs) {
+export function printModuleOutputs(module: IModule) {
+    console.warn(`Outputs of ${module.name} :`);
+    
+    for(let output of module.outputs) {
         console.log(`---- Output "${output.name}" : `);
         console.log(JSON.stringify(output.value));
         console.log('----');
@@ -16,20 +19,29 @@ export function printModuleOutputs(moduleOutputs: Array<ModuleOutput>) {
  */
 export class ExecutionEngine {
     moduleGraph: ModuleGraph;
+    asyncExecute: ()=>void;
 
-    public execute() {
-        console.log('Executing')
-        for(let module of this.moduleGraph.modules) {
-            if(!module.isValid) {
-                this.executeOneModule(module);
-            }
-        }
+    constructor(executeDelay: number) {
+        this.setExecuteDelay(executeDelay);
     }
+
+    public setExecuteDelay(executeDelay: number) {
+        this.asyncExecute = _.debounce(() => {
+            for(let module of this.moduleGraph.modules) {
+                if(!module.isValid) {
+                    //console.log(`Executing ${module.name}`);
+                    this.executeOneModule(module);
+                    //console.log(`Finished executing ${module.name}\n`);
+                }
+            }
+        }, executeDelay, {trailing: true, leading: false});
+    }
+
     private executeOneModule(module: IModule) {
-        if(module.isValid) {
+        if(module.isValid || module.isExecuting) {
             return;
         }
-        console.log('executeOneModule', module.name);
+        //console.log('executeOneModule', module.name);
 
         // Compute when no dependency or all dependencies are valid
         let invalidDependencies = module.inputs.filter(i => i.link && !i.link.from.module.isValid);
@@ -37,10 +49,13 @@ export class ExecutionEngine {
         if(invalidDependencies.length === 0) {
             // Execute module
             module.computeOutputs().then((moduleOutputs: Array<ModuleOutput>) => {
-                console.warn(`output of ${module.name} :`);
-                printModuleOutputs(moduleOutputs);
+                printModuleOutputs(module);
                 // Execute modules after this one
-                module.outputs.forEach(o => o.link && this.executeOneModule(o.link.to.module));
+                for(let o of module.outputs) {
+                    if(o.link) {
+                        this.executeOneModule(o.link.to.module);
+                    }
+                }
             });
             return;
         }
@@ -49,7 +64,7 @@ export class ExecutionEngine {
         for(let moduleInput of module.inputs) {
             // Execute the dependency
             if(moduleInput.link) {
-                console.log('dependency', moduleInput.name);
+                //console.log('dependency', moduleInput.name);
                 let dependency = moduleInput.link.from.module;
                 this.executeOneModule(dependency);
             }
@@ -62,14 +77,19 @@ export class ExecutionEngine {
         }
 
         // TODO remove this when we know when to call it
-        this.execute();
+        this.asyncExecute();
     }
 
     invalidate(module: IModule) {
+        //console.log(`Invalidating ${module.name}`);
         module.invalidate();
+        for(let o of module.outputs) {
+            if(o.link) {
+                this.invalidate(o.link.to.module);
+            }
+        }
 
-        // TODO remove this when we know when to call it
-        this.execute();
+        this.asyncExecute();
     }
     setModuleGraph(moduleGraph: ModuleGraph) {
         this.moduleGraph = moduleGraph;
