@@ -49,7 +49,7 @@ export class ExecutionEngine {
         if(invalidDependencies.length === 0) {
             // Execute module
             module.computeOutputs().then((moduleOutputs: Array<ModuleOutput>) => {
-                printModuleOutputs(module);
+                //printModuleOutputs(module);
                 // Execute modules after this one
                 for(let o of module.outputs) {
                     if(o.link) {

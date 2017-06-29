@@ -88,25 +88,31 @@ class Server {
 
             let changedFiles: Set<string> = new Set<string>();
 
-            let module = ModuleBuilder.buildFunctionModule(moduleConfig, () => {
+            let fileModule = ModuleBuilder.buildFunctionModule(moduleConfig, () => {
+                let fileContents = Array.from(changedFiles).map((filePath: string) => {
+                    return {
+                        content: fs.readFileSync(filePath, {encoding: 'utf8'}),
+                        path: filePath
+                    };
+                });
                 let outputs = {
-                    [extension+'-file']: Array.from(changedFiles)
+                    [extension+'-file']: fileContents
                 };
                 //console.log(`changedFiles seen by ${module.name}`, util.inspect(changedFiles));
                 changedFiles.clear();
                 return outputs; 
             });
 
-            moduleGraph.insertModule(module);
+            moduleGraph.insertModule(fileModule);
             
             // Link this watcher module to every module that needs that type of file
             let modulesToConnect = entryNodes.filter(m => m.inputs.find(i => i.name === moduleConfig.outputs[0].name) !== undefined);
             for(let moduleToConnect of modulesToConnect) {
-                moduleGraph.link(module.outputs[0], moduleToConnect.inputs.find(i => i.name === moduleConfig.outputs[0].name)!);
+                moduleGraph.link(fileModule.outputs[0], moduleToConnect.inputs.find(i => i.name === moduleConfig.outputs[0].name)!);
             }
 
             let debouncedInvalidation = _.debounce(() => {
-                this.executionEngine.invalidate(module);
+                this.executionEngine.invalidate(fileModule);
             }, 500, {trailing: true, leading: false});
 
 

@@ -33,13 +33,6 @@ module.exports = function createModule(messageHandlers) {
             } else {
                 console.log('This module does nothing...');
             }
-        },
-
-        acceptedInput: () => {
-            process.send({
-                type: 'acceptedInput',
-                payload: messageHandlers.acceptedInput
-            });
         }
     }
 

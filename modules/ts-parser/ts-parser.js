@@ -3,18 +3,29 @@ const createModule = require('../ModuleHelper');
 
 createModule({
     newInput: (payload) => {
-        let sourceFile = ts.createSourceFile('fileNameTest', payload, ts.ScriptTarget.ES6, /*setParentNodes */ false);
+        try {
+            console.log(`ts-parser computing ${payload["ts-file"].length} files`);
+            let sourceFile = payload['ts-file'].map(tsFile => {
+                return {
+                    ast: ts.createSourceFile(tsFile.path, tsFile.content, ts.ScriptTarget.ES2016, /*setParentNodes */ false),
+                    path: tsFile.path
+                };
+            });
 
-        // Send response
-        process.send({
-            type: 'output',
-            payload: {
-                ast: sourceFile
-            }
-        });
+            // Send response
+            process.send({
+                type: 'computeSuccess',
+                payload: {
+                    'ts-ast': sourceFile
+                }
+            });
 
-        //process.send({ type: 'analyzeFailed' });
-    },
-    acceptedInput: ['ts-file', 'tsx-file'],
-    output: 'ts-ast'
+        } catch(e) {
+            // Send response
+            process.send({
+                type: 'computeFail',
+                payload: "I'm weak master... (ts-parser)"
+            });
+        }
+    }
 });

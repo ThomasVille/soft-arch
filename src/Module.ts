@@ -1,6 +1,7 @@
 import Message from './Message';
 import MessageType from './MessageType';
 import { Link } from "./ModuleGraph";
+import MessageBuilder from './MessageBuilder';
 
 export class ModuleInput {
     name: string;
@@ -130,8 +131,16 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
             this.messageListeners.set(messageType, [listener]);
         }
     }
+    public removeMessageListener(messageType: MessageType, listener: (message: Message)=>void) {
+        if(this.messageListeners.has(messageType)) {
+            let listeners = this.messageListeners.get(messageType);
+            if(listeners) {
+                this.messageListeners.set(messageType, listeners.filter(l => l !== listener));
+            }
+        }
+    }
 
-    public onMessage(message: any) {
+    private onMessage(message: any) {
         this.state = ModuleState.IDLE;
         
         let strictMessage: Message = reconstructMessage(message);
@@ -163,9 +172,44 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
         console.log('computeOutput of', this.name);
         this.isExecuting = true;
         return new Promise((resolve, reject) => {
-            this.isValid = true;
-            this.isExecuting = false;
-            resolve(this.outputs);
+            // Transform the input array to an object
+            let inputs: any = {};
+            this.inputs.forEach((i: ModuleInput) => inputs[i.name] = i.link ? i.link.from.output.value : undefined);
+
+            let successCallback = (message: Message) => {
+                let outputs = message.payload;
+
+                // Store the output array
+                // Outputs not described are not part of the module output array
+                let modifiedOutputs = 0;
+                for(let key in outputs) {
+                    let output = this.outputs.find(o => o.name === key);
+                    if(output) {
+                        modifiedOutputs++;
+                        output.value = outputs[key];
+                    }
+                }
+                if(modifiedOutputs !== this.outputs.length) {
+                    throw new Error('Not all outputs have been computed');
+                }
+
+                this.removeMessageListener('computeSuccess', successCallback);
+                this.removeMessageListener('computeFail', failCallback);
+                this.isExecuting = false;
+                this.isValid = true;
+                resolve(this.outputs);
+            };
+            let failCallback = (message: Message) => {
+                this.removeMessageListener('computeSuccess', successCallback);
+                this.removeMessageListener('computeFail', failCallback);
+                this.isExecuting = false;
+                this.isValid = true;
+                reject(message.payload);
+            };
+
+            this.sendMessage(MessageBuilder.createNewInput(inputs));
+            this.addMessageListener('computeSuccess', successCallback);
+            this.addMessageListener('computeFail', failCallback);
         });
     }
 }
