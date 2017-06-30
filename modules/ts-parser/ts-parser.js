@@ -1,5 +1,7 @@
 const ts = require("typescript");
 const createModule = require('../ModuleHelper');
+// Allow us to prune circular references of the ast
+const stringify = require('json-stringify-safe');
 
 createModule({
     newInput: (payload) => {
@@ -16,7 +18,7 @@ createModule({
             process.send({
                 type: 'computeSuccess',
                 payload: {
-                    'ts-ast': sourceFile
+                    'ts-ast': stringify(sourceFile, null, 0, () => {})
                 }
             });
 

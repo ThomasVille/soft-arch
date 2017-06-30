@@ -5,7 +5,7 @@ export class FileWatcher {
     files: Map<string, Array<(filename: string)=>void>> = new Map();
 
     constructor() {
-
+        this.handleFileChange = this.handleFileChange.bind(this);
     }
 
     public notifyAll() {
@@ -18,9 +18,10 @@ export class FileWatcher {
 
     private handleFileChange(eventType: string, filename: string) {
         let listeners = this.files.get(filename)!;
-
-        for(let listener of listeners) {
-            listener(filename);
+        if(listeners) {
+            for(let listener of listeners) {
+                listener(filename);
+            }
         }
     }
 
