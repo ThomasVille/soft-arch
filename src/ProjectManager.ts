@@ -57,6 +57,7 @@ export class ProjectManager {
         console.log(`Project's modules : ${this.projectConfig.modules}`);
         console.log(`Project's include : ${this.projectConfig.include}`);
         console.log(`Project's exclude : ${this.projectConfig.exclude}`);
+        console.log(`Project's files : ${this.projectConfig.filenames}`);
       });
     });
   }

@@ -24,7 +24,7 @@ createModule({
             // Send response
             process.send({
                 type: 'computeFail',
-                payload: "I'm weak master... (ts-parser)"
+                payload: "I'm weak master... (ts-parser)"+e
             });
         }
     }

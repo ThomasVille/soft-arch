@@ -17,6 +17,6 @@
             }
         }
     ],
-    "include": "test/**",
-    "exclude": "**/package.json"
+    "include": "**",
+    "exclude": ["node_modules", ".vscode"]
 }
