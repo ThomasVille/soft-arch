@@ -142,7 +142,7 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
 
     private onMessage(message: any) {
         this.state = ModuleState.IDLE;
-        
+
         let strictMessage: Message = reconstructMessage(message);
 
         if(this.messageQueue.length !== 0) {

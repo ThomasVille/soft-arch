@@ -2,8 +2,7 @@
     "name": "Innovative project",
     "modules": [
         "react-components",
-        "ts-parser",
-        "js-parser"
+        "ts-parser"
     ],
     "links": [
         {

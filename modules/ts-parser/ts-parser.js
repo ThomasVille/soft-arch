@@ -18,7 +18,7 @@ createModule({
             process.send({
                 type: 'computeSuccess',
                 payload: {
-                    'ts-ast': stringify(sourceFile, null, 0, () => {})
+                    'ts-ast': JSON.parse(stringify(sourceFile, null, 0, () => {}))
                 }
             });
 

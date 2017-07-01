@@ -1,7 +1,7 @@
 function setup(messageHandler) {
     process.on('message', messageHandler);
 
-    process.send({ type: 'lifecycle', message: 'ok' });
+    process.send({ type: 'startupSuccess', payload: 'ok' });
 }
 
 
