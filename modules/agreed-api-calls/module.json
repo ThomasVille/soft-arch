@@ -1,5 +1,5 @@
 {
-    "name": "react-components",
+    "name": "agreed-api-calls",
     "file": "index.js",
     "inputs": [
         {
@@ -9,8 +9,8 @@
     ],
     "outputs": [
         {
-            "name": "react-components",
-            "format": "react-component-list"
+            "name": "api-calls",
+            "format": "api-calls-list"
         }
     ]
 }

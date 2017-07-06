@@ -169,7 +169,7 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
     }
 
     public computeOutputs(): Promise<Array<ModuleOutput>> {
-        console.log('computeOutput of', this.name);
+        //console.log('computeOutput of', this.name);
         this.isExecuting = true;
         return new Promise((resolve, reject) => {
             // Transform the input array to an object
@@ -248,7 +248,7 @@ export class FunctionModule extends ModuleBaseImpl implements IModule {
     }
 
     public computeOutputs(): Promise<Array<ModuleOutput>> {
-        console.log('computeOutput of', this.name);
+        //console.log('computeOutput of', this.name);
         this.isExecuting = true;
         return new Promise((resolve, reject) => {
             // Transform the input array to an object
