@@ -7,12 +7,20 @@ export class ModuleInput {
     name: string;
     module: IModule;
     link: Link | undefined;
+
+    static toJSON(m: ModuleInput): any {
+        return m.name;
+    }
 }
 export class ModuleOutput {
     name: string;
     module: IModule;
     link: Link | undefined;
     value: any;
+
+    static toJSON(m: ModuleOutput): any {
+        return m.name;
+    }
 }
 export interface ModuleConfig {
     name: string,
@@ -76,6 +84,7 @@ export interface IModule {
     //addMessageListener(messageType: MessageType, listener: (message: Message)=>void): void;
     computeOutputs(): Promise<Array<ModuleOutput>>;
     invalidate(): void;
+    toJSON(): any;
 }
 
 export class ModuleBaseImpl {
@@ -92,6 +101,13 @@ export class ModuleBaseImpl {
         this.isValid = false;
     }
     
+    toJSON(): any {
+        return {
+            name: this.name,
+            inputs: this.inputs.map(i => ModuleInput.toJSON(i)),
+            outputs: this.outputs.map(o => ModuleOutput.toJSON(o))
+        };
+    }
 }
 
 export class ProcessModule extends ModuleBaseImpl implements IModule {

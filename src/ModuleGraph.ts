@@ -14,6 +14,19 @@ export class LinkTo {
 export class Link {
     from: LinkFrom = new LinkFrom();
     to: LinkTo = new LinkTo();
+
+    static toJSON(l: Link) {
+        return {
+            from: {
+                module: l.from.module.name,
+                output: l.from.output.name
+            },
+            to: {
+                module: l.to.module.name,
+                input: l.to.input.name
+            }
+        };
+    }
 }
 
 export class ModuleGraph {
@@ -80,5 +93,12 @@ export class ModuleGraph {
             }
         }
         return extensions;
+    }
+
+    toJSON(): any {
+        return {
+            modules: this.modules.map(m => m.toJSON()),
+            links: this.links.map(l => Link.toJSON(l))
+        }
     }
 }

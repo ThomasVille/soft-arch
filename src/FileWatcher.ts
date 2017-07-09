@@ -3,9 +3,18 @@ const fs = require('fs');
 export class FileWatcher {
     // Maps each file with a list of listeners
     files: Map<string, Array<(filename: string)=>void>> = new Map();
+    watchers: Array<any> = new Array();
 
     constructor() {
         this.handleFileChange = this.handleFileChange.bind(this);
+        this.clear = this.clear.bind(this);
+    }
+
+    public clear() {
+        for(let w of this.watchers) {
+            w.close();
+        }
+        this.files.clear();
     }
 
     public notifyAll() {
@@ -29,7 +38,7 @@ export class FileWatcher {
         this.files.set(path, new Array());
         
         // Add a watcher that calls each listener of this file
-        fs.watch(path, {persistent: false}, this.handleFileChange);
+        this.watchers.push(fs.watch(path, {persistent: false}, this.handleFileChange));
     }
 
     public addFiles(paths: Array<string>): void {

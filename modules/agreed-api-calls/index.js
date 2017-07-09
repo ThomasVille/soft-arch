@@ -13,7 +13,6 @@ createModule({
             })
             .filter(call => call.calls.length !== 0);
 
-            console.log(JSON.stringify(apiCalls, null, 4));
             // Send response
             process.send({
                 type: 'computeSuccess',

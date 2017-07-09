@@ -1,7 +1,9 @@
+///<reference path="../node_modules/@types/node/index.d.ts" />
 import { ProjectConfig, LinkConfig } from "./ProjectManager";
 import { IModule, ModuleOutput } from "./Module";
 import { ModuleGraph } from "./ModuleGraph";
 import * as _ from 'lodash';
+import {EventEmitter} from 'events';
 
 
 export function printModuleOutputs(module: IModule) {
@@ -9,19 +11,20 @@ export function printModuleOutputs(module: IModule) {
     
     for(let output of module.outputs) {
         console.log(`---- Output "${output.name}" : `);
-        console.log(JSON.stringify(output.value));
+        console.log(JSON.stringify(output.value, null, 4));
         console.log('----');
     }
 }
 
 /**
- * Execute the modules that needs to be executed based on the state of the dependency graph.
+ * Execute the modules that need to be executed based on the state of the dependency graph.
  */
-export class ExecutionEngine {
+export class ExecutionEngine extends EventEmitter {
     moduleGraph: ModuleGraph;
     asyncExecute: ()=>void;
 
     constructor(executeDelay: number) {
+        super();
         this.setExecuteDelay(executeDelay);
     }
 
@@ -49,12 +52,20 @@ export class ExecutionEngine {
         if(invalidDependencies.length === 0) {
             // Execute module
             module.computeOutputs().then((moduleOutputs: Array<ModuleOutput>) => {
-                //printModuleOutputs(module);
+                
+                let linkedOutputsCount = 0;
                 // Execute modules after this one
                 for(let o of module.outputs) {
                     if(o.link) {
                         this.executeOneModule(o.link.to.module);
+                        linkedOutputsCount++;
                     }
+                }
+
+                if(linkedOutputsCount === 0) {
+                    this.emit('newPublicOutput', module.outputs);
+                } else {
+                    this.emit('newPrivateOutput', module.outputs);
                 }
             });
             return;
@@ -71,7 +82,7 @@ export class ExecutionEngine {
         }
 
     }
-    invalidateAll() {
+    public invalidateAll() {
         for(let module of this.moduleGraph.modules) {
             module.invalidate();
         }
@@ -80,7 +91,7 @@ export class ExecutionEngine {
         this.asyncExecute();
     }
 
-    invalidate(module: IModule) {
+    public invalidate(module: IModule) {
         //console.log(`Invalidating ${module.name}`);
         module.invalidate();
         for(let o of module.outputs) {
@@ -91,7 +102,8 @@ export class ExecutionEngine {
 
         this.asyncExecute();
     }
-    setModuleGraph(moduleGraph: ModuleGraph) {
+
+    public setModuleGraph(moduleGraph: ModuleGraph) {
         this.moduleGraph = moduleGraph;
     }
 }
