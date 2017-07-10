@@ -219,7 +219,7 @@ describe('ModuleGraph', function() {
                 expect(link.from.module).to.equal(parser);
                 done();
             });
-        });
+        });        
     });
 });
 
@@ -272,6 +272,7 @@ describe('FunctionModule', function() {
             .catch(err => done(err));
 
         });
+        
         it("should throw when operation doesn't produce all the described outputs", function(done) {
             // Produce two outputs with one different from the description : division & product
             let operation = (inputs: any) => {

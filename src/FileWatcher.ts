@@ -14,6 +14,7 @@ export class FileWatcher {
         for(let w of this.watchers) {
             w.close();
         }
+        this.watchers = [];
         this.files.clear();
     }
 

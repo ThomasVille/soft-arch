@@ -5,11 +5,11 @@ const explore = require('./TreeTools');
 createModule({
     newInput: (payload) => {
         try {
-            console.log(`agreed-api-calls computing ${payload["ts-file"].length} files`);
-            let apiCalls = payload['ts-file'].map(tsFile => {
+            console.log(`react-components computing ${payload["ts-file"].length} files`);
+            let reactComponents = payload['ts-file'].map(tsFile => {
                 let ast = ts.createSourceFile(tsFile.path, tsFile.content, ts.ScriptTarget.ES2016, /*setParentNodes */ false);
                 return {
-                    calls: findApiCalls(ast, tsFile.path),
+                    calls: findReactComponents(ast, tsFile.path),
                     path: tsFile.path
                 };
             })
@@ -19,7 +19,7 @@ createModule({
             process.send({
                 type: 'computeSuccess',
                 payload: {
-                    'api-calls': apiCalls
+                    'react-components': reactComponents
                 }
             });
 
@@ -27,13 +27,13 @@ createModule({
             // Send response
             process.send({
                 type: 'computeFail',
-                payload: "I'm weak master.... (agreed-api-calls)"+e
+                payload: "I'm weak master.... (react-components)"+e
             });
         }
     }
 });
 
-function findApiCalls(tsAst, fileName) {
+function findReactComponents(tsAst, fileName) {
     let calls = [];
     let insideApi = false;
     let insideFunction = false;

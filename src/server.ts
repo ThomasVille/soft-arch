@@ -35,7 +35,7 @@ class Server {
         this.fileWatcher = fileWatcher;
 
         this.onMessage = this.onMessage.bind(this);
-        this.onNewPublicOutput = this.onNewPublicOutput.bind(this);
+        this.onNewOutput = this.onNewOutput.bind(this);
         
     }
 
@@ -55,11 +55,13 @@ class Server {
 
     private sendMessage(message: any) {
         if(this.socket) {
+            console.log('Send message : ', message.type);
             this.socket.sendMessage(message);
         }
     }
 
     onMessage(message: any) {
+        console.log('onMessage');
         if(message.type === undefined || message.payload === undefined) {
             console.error('Malformed message', message);
             return;
@@ -71,6 +73,20 @@ class Server {
             case 'refreshProject':
                 this.openDefaultProject();
                 break;
+            case 'getAllOutputs':
+                this.executionEngine.moduleGraph.getNodes().forEach(module => {
+                    this.sendMessage({
+                        type: 'newOutput',
+                        payload: {
+                            module: module.name,
+                            outputs: module.outputs.map(o => ({
+                                name: o.name,
+                                value: o.value
+                            }))
+                        }
+                    });
+                });
+                break;
             default:
                 this.sendMessage({type: 'unknownMessageType', payload: null});
                 break;
@@ -78,13 +94,13 @@ class Server {
     }
 
     /**
-     * New public outputs were computed
+     * New output was computed
      * 
      * @param {any} outputs List of outputs
      * @memberof Server
      */
-    onNewPublicOutput(outputs: Array<ModuleOutput>) {
-        this.sendMessage({type: 'newPublicOutput', payload: outputs});
+    onNewOutput(outputs: Array<ModuleOutput>) {
+        this.sendMessage({type: 'newOutput', payload: outputs});
     }
 
     injectFileModules() {
@@ -136,7 +152,7 @@ class Server {
 
             // Store the changed files for a certain time then invalidate the module
             this.fileWatcher.addListener(extension, (filename: string) => {
-                //console.log(`file ${filename} has changed. Invalidating module ...`);
+                console.log(`file ${filename} has changed. Invalidating module ...`);
                 changedFiles.add(filename);
                 debouncedInvalidation();
             });
@@ -155,7 +171,7 @@ class Server {
             this.moduleManager.loadModules(this.projectConfig.modules);
             this.moduleGraph = new ModuleGraph(this.moduleManager.modules, this.projectConfig.links);
             this.executionEngine.setModuleGraph(this.moduleGraph);
-            this.executionEngine.on('newPublicOutput', this.onNewPublicOutput);
+            this.executionEngine.on('newOutput', this.onNewOutput);
             this.injectFileModules();
         });
     }

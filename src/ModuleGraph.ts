@@ -66,7 +66,7 @@ export class ModuleGraph {
         link.from.output = fromOutput;
         link.to.module = toInput.module;
         link.to.input = toInput;
-        fromOutput.link = link;
+        fromOutput.link.push(link);
         toInput.link = link;
 
         this.links.push(link);
@@ -74,6 +74,10 @@ export class ModuleGraph {
 
     getEntryNodes(): Array<IModule> {
         return this.modules.filter(m => m.inputs.every(i => i.name.indexOf('file') !== -1));
+    }
+
+    getNodes(): Array<IModule> {
+        return this.modules;
     }
 
     /**

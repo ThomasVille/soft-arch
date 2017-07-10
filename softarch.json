@@ -2,20 +2,9 @@
     "name": "Innovative project",
     "modules": [
         "agreed-api-calls",
-        "ts-parser"
+        "react-components"
     ],
-    "links": [
-        {
-            "from": {
-                "module": "ts-parser",
-                "output": "ts-ast"
-            },
-            "to": {
-                "module": "agreed-api-calls",
-                "input": "ts-ast"
-            }
-        }
-    ],
+    "links": [],
     "include": "../Agreed/**",
     "exclude": ["../Agreed/node_modules", "../Agreed/.vscode", "../Agreed/Rendu"]
 }

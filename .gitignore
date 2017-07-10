@@ -2,3 +2,4 @@ node_modules
 .history
 *.pptx
 modules/cpp-test-module
+.vscode

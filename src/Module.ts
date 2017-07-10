@@ -15,7 +15,7 @@ export class ModuleInput {
 export class ModuleOutput {
     name: string;
     module: IModule;
-    link: Link | undefined;
+    link: Array<Link>;
     value: any;
 
     static toJSON(m: ModuleOutput): any {
@@ -43,7 +43,7 @@ export class ModuleBuilder {
         module.outputs = moduleConfig.outputs.map(i => ({
             name: i.name,
             module: module,
-            link: undefined,
+            link: [],
             value: undefined
         }));
         module.process = process;
@@ -62,7 +62,7 @@ export class ModuleBuilder {
         module.outputs = moduleConfig.outputs.map(i => ({
             name: i.name,
             module: module,
-            link: undefined,
+            link: [],
             value: undefined
         }));
         module.operation = operation;

@@ -32,9 +32,9 @@ export class ExecutionEngine extends EventEmitter {
         this.asyncExecute = _.debounce(() => {
             for(let module of this.moduleGraph.modules) {
                 if(!module.isValid) {
-                    //console.log(`Executing ${module.name}`);
+                    console.log(`Executing ${module.name}`);
                     this.executeOneModule(module);
-                    //console.log(`Finished executing ${module.name}\n`);
+                    console.log(`Finished executing ${module.name}\n`);
                 }
             }
         }, executeDelay, {trailing: true, leading: false});
@@ -44,7 +44,7 @@ export class ExecutionEngine extends EventEmitter {
         if(module.isValid || module.isExecuting) {
             return;
         }
-        //console.log('executeOneModule', module.name);
+        console.log('executeOneModule', module.name);
 
         // Compute when no dependency or all dependencies are valid
         let invalidDependencies = module.inputs.filter(i => i.link && !i.link.from.module.isValid);
@@ -52,21 +52,13 @@ export class ExecutionEngine extends EventEmitter {
         if(invalidDependencies.length === 0) {
             // Execute module
             module.computeOutputs().then((moduleOutputs: Array<ModuleOutput>) => {
-                
-                let linkedOutputsCount = 0;
                 // Execute modules after this one
                 for(let o of module.outputs) {
-                    if(o.link) {
-                        this.executeOneModule(o.link.to.module);
-                        linkedOutputsCount++;
+                    for(let link of o.link) {
+                        this.executeOneModule(link.to.module);
                     }
                 }
-
-                if(linkedOutputsCount === 0) {
-                    this.emit('newPublicOutput', module.outputs);
-                } else {
-                    this.emit('newPrivateOutput', module.outputs);
-                }
+                this.emit('newOutput', module.outputs);
             });
             return;
         }
@@ -95,8 +87,8 @@ export class ExecutionEngine extends EventEmitter {
         //console.log(`Invalidating ${module.name}`);
         module.invalidate();
         for(let o of module.outputs) {
-            if(o.link) {
-                this.invalidate(o.link.to.module);
+            for(let link of o.link) {
+                this.invalidate(link.to.module);
             }
         }
 
