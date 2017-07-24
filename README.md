@@ -2,6 +2,10 @@
 
 Software environnement allowing easy source code analysis across projects. Write source code analysers in any language and use its outputs to display information or as inputs to other analysers.
 
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
 ### Prerequisites
 
 You need `npm` installed on your computer prior to run and build the project.
@@ -10,10 +14,6 @@ Install all the dependencies the first time you want to run the project :
 ```
 npm install
 ```
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See the "Building" chapter for notes on how to build a release version of the project.
 
 Run the code with the following command :
 ```
