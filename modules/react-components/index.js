@@ -53,7 +53,7 @@ function findReactComponents(tsAst, fileName) {
             currentCall.name = node.name.text;
         }
         // Getting inside a string inside a method inside the Api class
-        if(insideApi && insideFunction && (node.kind === 14 || node.kind === 9)) {
+        if(insideApi && insideFunction && (node.kind === 14)) {
             // If the string begins with / then consider it to be an API address
             if(node.text.indexOf('/') === 0) {
                 currentCall.address = node.text;

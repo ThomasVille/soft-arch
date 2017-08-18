@@ -1,0 +1,16 @@
+{
+    "name": "npm-tasks",
+    "file": "index.js",
+    "inputs": [
+        {
+            "name": "json-file",
+            "format": "json-file"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "npm-tasks",
+            "format": "npm-tasks"
+        }
+    ]
+}

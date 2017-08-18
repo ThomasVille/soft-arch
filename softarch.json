@@ -2,9 +2,9 @@
     "name": "Innovative project",
     "modules": [
         "agreed-api-calls",
-        "react-components"
+        "npm-tasks"
     ],
     "links": [],
-    "include": "../Agreed/**",
-    "exclude": ["../Agreed/node_modules", "../Agreed/.vscode", "../Agreed/Rendu"]
+    "include": ["./test/fake_project/**"],
+    "exclude": []
 }

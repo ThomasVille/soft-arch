@@ -111,17 +111,20 @@ export class ModuleBaseImpl {
 }
 
 export class ProcessModule extends ModuleBaseImpl implements IModule {
-    private _process: any = undefined;
+    public process: any = undefined;
     public filePath: string = '';
+    private socket: any = undefined;
 
-    public set process(process: any) {
-        this._process = process;
-        this._process.on('message', (m: any) => this.onMessage(m));
-        this._process.on('close', (code: any) => this.onClose(code));
-        this._process.on('error', (code: any) => this.onError(code));
+    constructor() {
+        super();
+        this.onMessage = this.onMessage.bind(this);
+        this.onError = this.onError.bind(this);
     }
-    public get process() {
-        return this._process;
+
+    public setSocket(socket: any) {
+        this.socket = socket;
+        socket.on('message', this.onMessage);
+        socket.on('error', this.onError);
     }
 
     public sendMessage(message: any): void {
@@ -133,7 +136,7 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
         // Send the message only if the module is IDLEing and has no pending messages
         if(this.state === ModuleState.IDLE && this.messageQueue.length === 0) {
             this.state = ModuleState.BUSY;
-            this.process.send(message);
+            this.socket.sendMessage(message);
         }
     }
 
@@ -160,11 +163,11 @@ export class ProcessModule extends ModuleBaseImpl implements IModule {
         this.state = ModuleState.IDLE;
 
         let strictMessage: Message = reconstructMessage(message);
-
+        console.log('[SERVER] message from module ', this.name)
         if(this.messageQueue.length !== 0) {
             let sending = this.messageQueue.shift();
             this.state = ModuleState.BUSY;
-            this.process.send(sending);
+            this.socket.sendMessage(sending);
         }
 
         let listeners = this.messageListeners.get(strictMessage.type);

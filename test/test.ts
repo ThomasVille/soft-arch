@@ -65,7 +65,7 @@ describe('FSHelper', function() {
         it('should expand *', function(done) {
             FSHelper.listFiles(['test/fake_project/*'])
             .then(files => {
-                expect(files).to.have.deep.members(['test/fake_project/index.ts', 'test/fake_project/main.cpp', 'test/fake_project/softarch.json', 'test/fake_project/package.json']);
+                expect(files).to.have.deep.members(['test/fake_project/ApiManager.ts', 'test/fake_project/index.ts', 'test/fake_project/main.cpp', 'test/fake_project/softarch.json', 'test/fake_project/package.json']);
                 done();
             })
             .catch(err => {
@@ -75,7 +75,7 @@ describe('FSHelper', function() {
         it('should expand **', function(done) {
             FSHelper.listFiles(['test/fake_project/**'])
             .then(files => {
-                expect(files).to.have.deep.members(['test/fake_project/index.ts', 'test/fake_project/main.cpp', 'test/fake_project/package.json', 'test/fake_project/softarch.json', 'test/fake_project/assets/model.3d']);
+                expect(files).to.have.deep.members(['test/fake_project/ApiManager.ts', 'test/fake_project/index.ts', 'test/fake_project/main.cpp', 'test/fake_project/package.json', 'test/fake_project/softarch.json', 'test/fake_project/assets/model.3d']);
                 done();
             })
             .catch(err => {
@@ -161,7 +161,7 @@ describe('FSHelper', function() {
         it('should include and exclude correctly the files', function(done) {
             FSHelper.walkFiles(['test/fake_project/**'], ['test/fake_project/assets'])
             .then(files => {
-                expect(files).to.have.deep.members(['test/fake_project/index.ts', 'test/fake_project/main.cpp', 'test/fake_project/package.json', 'test/fake_project/softarch.json']);
+                expect(files).to.have.deep.members(['test/fake_project/ApiManager.ts', 'test/fake_project/index.ts', 'test/fake_project/main.cpp', 'test/fake_project/package.json', 'test/fake_project/softarch.json']);
                 done();
             })
             .catch(err => {

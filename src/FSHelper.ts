@@ -108,13 +108,10 @@ export default class FSHelper {
     /**
      * List all the files and folders matching the globs.
      */
-    static walkFiles(includeGlobs: Array<string>|string, excludeGlobs: Array<string>|string): Promise<Array<string>> {
+    static walkFiles(includeGlobs: Array<string>|string, excludeStrings: Array<string>|string): Promise<Array<string>> {
         includeGlobs = Array.isArray(includeGlobs) ? includeGlobs : [includeGlobs];
-        excludeGlobs = Array.isArray(excludeGlobs) ? excludeGlobs : [excludeGlobs];
+        excludeStrings = Array.isArray(excludeStrings) ? excludeStrings : [excludeStrings];
 
-        return FSHelper.listAll(excludeGlobs)
-        .then((excludePaths: Array<string>) => {
-            return FSHelper.listFiles(includeGlobs, excludePaths);
-        });
+        return FSHelper.listFiles(includeGlobs, excludeStrings);
     }
 }

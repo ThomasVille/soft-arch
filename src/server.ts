@@ -12,7 +12,7 @@ import {AppConfig} from './AppConfig';
 import {ProjectConfig, ProjectManager} from './ProjectManager';
 import {ExecutionEngine} from './ExecutionEngine';
 import {Link, ModuleGraph} from './ModuleGraph';
-import {ModuleOutput, ModuleBuilder,  ModuleConfig} from './Module';
+import {ModuleState, ModuleOutput,  ModuleBuilder,   ModuleConfig} from './Module';
 import {FileWatcher} from './FileWatcher';
 import * as _ from 'lodash';
 
@@ -26,7 +26,8 @@ class Server {
     executionEngine: ExecutionEngine;
     fileWatcher: FileWatcher;
     moduleGraph: ModuleGraph;
-    socket: any;
+    uiSocket: any;
+    moduleSockets: Array<any> = [];
 
     constructor(moduleManager: ModuleManager, appConfig: AppConfig, executionEngine: ExecutionEngine, fileWatcher: FileWatcher) {
         this.moduleManager = moduleManager;
@@ -36,27 +37,60 @@ class Server {
 
         this.onMessage = this.onMessage.bind(this);
         this.onNewOutput = this.onNewOutput.bind(this);
+        this.onModuleMessage = this.onModuleMessage.bind(this);
         
     }
 
     startRPC() {
+        this.startModuleRPC();
+        this.startUIRPC();
+    }
+    startUIRPC() {
         var port = 9838;
         var server = net.createServer();
         server.listen(port);
-        server.on('connection', (socket: any) => { //This is a standard net.Socket
-            this.socket = new JsonSocket(socket); //Now we've decorated the net.Socket to be a JsonSocket
-            this.socket.on('message', this.onMessage);
-            this.socket.on('error', (e:any) => {
+        server.on('connection', (socket: any) => {
+            this.uiSocket = new JsonSocket(socket);
+            this.uiSocket.on('message', this.onMessage);
+            this.uiSocket.on('error', (e:any) => {
                 console.log('error',e);
             });
             console.log('connection');
         });
     }
+    startModuleRPC() {
+        var port = 9839;
+        var server = net.createServer();
+        server.listen(port);
+        server.on('connection', (socket: any) => {
+            let moduleSocket = {
+                socket: new JsonSocket(socket),
+                module: undefined
+            };
+            this.moduleSockets.push(moduleSocket);
+            moduleSocket.socket.on('message', (e: any) => this.onModuleMessage(moduleSocket, e));
+            moduleSocket.socket.on('error', (e:any) => {
+                console.log('module error', e);
+            });
+            console.log('module connection');
+        });
+    }
+
+    private onModuleMessage(moduleSocket: any, message: any) {
+        switch(message.type) {
+            case 'startupSuccess':
+                moduleSocket.module = this.moduleManager.getModuleByName(message.payload);
+                moduleSocket.module.setSocket(moduleSocket.socket);
+                moduleSocket.module.state = ModuleState.IDLE;
+                break;
+        }
+        console.log('module message ['+ moduleSocket.module.name +']', message);
+    }
 
     private sendMessage(message: any) {
-        if(this.socket) {
+        if(this.uiSocket) {
             console.log('Send message : ', message.type);
-            this.socket.sendMessage(message);
+            this.uiSocket.sendMessage(message);
         }
     }
 

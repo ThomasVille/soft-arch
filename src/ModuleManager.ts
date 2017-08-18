@@ -48,8 +48,12 @@ export default class ModuleManager {
             return false;
         }
 
-
-        let module: IModule = ModuleBuilder.buildProcessModule(moduleConfig, cp.fork(`${this.appConfig.defaultModuleFolder}/modules/${moduleName}/${moduleConfig.file}`));
+        console.log(`spawning ${this.appConfig.defaultModuleFolder}/modules/${moduleName}/${moduleConfig.file}`);
+        let proc = cp.exec(`node ${this.appConfig.defaultModuleFolder}/modules/${moduleName}/${moduleConfig.file}`);
+        proc.stdout.on('data', (m: any) => console.log('stdout', m));
+        proc.on('close', (code: any) => console.log('close', code));
+        proc.on('error', (code: any) => console.log('error', code));
+        let module: IModule = ModuleBuilder.buildProcessModule(moduleConfig, proc);
         this.modules.push(module);
 
         //module.addMessageListener('acceptedInput', (message: Message) => this.onAcceptedInput(message.payload, module));
@@ -60,6 +64,10 @@ export default class ModuleManager {
 
     getAllModules(): Array<string> {
         return this.modules.map(m => m.name);
+    }
+
+    getModuleByName(name: string): IModule | undefined {
+        return this.modules.find(m => m.name === name);
     }
 
 }
