@@ -62,7 +62,7 @@ I plan to use [SemVer](http://semver.org/) for versioning when all the base feat
 
 ## Authors
 
-* **Thomas Ville** - *Initial work* - [WhiteMoll](https://github.com/WhiteMoll)
+* **Thomas Ville** - *Initial work* - [ThomasVille](https://github.com/ThomasVille)
 
 ## License
 
